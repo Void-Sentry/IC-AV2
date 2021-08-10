@@ -1,0 +1,47 @@
+FUNCTION_BLOCK Fuzzy
+
+VAR_INPUT				
+	lucro_anual : REAL;
+	lucro_obtido : REAL;
+END_VAR
+
+VAR_OUTPUT				
+	preco : REAL;
+END_VAR
+
+FUZZIFY lucro_anual	
+	TERM abaixo_do_valor_esperado :=    (0, 1) (4, 0); 
+	TERM proximo_do_valor_esperado := (1, 0) (4,1) (6,1) (9,0);
+	TERM acima_do_valor_esperado := (6, 0) (9, 1);   
+END_FUZZIFY
+
+FUZZIFY lucro_obtido
+	TERM baixo := (0, 1) (4,0);
+	TERM razoavel := (4, 0) (5, 1) (6, 1) (7, 0);
+	TERM alto := (7,0) (9,1);
+END_FUZZIFY
+
+DEFUZZIFY preco
+	TERM barato := 5; //(0,0) (5,1) (10,0); 
+	TERM aceitavel := 15; //(10,0) (15,1) (20,0);
+	TERM caro := 30;//(20,0) (25,1) (30,1);
+	METHOD : COGF;		
+	DEFAULT := 0;		
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND : MIN;			
+	ACT : MIN;			
+	ACCU : MAX;			
+
+	RULE 1 : IF lucro_anual IS abaixo_do_valor_esperado OR lucro_obtido IS baixo THEN preco IS aceitavel;
+	RULE 2 : IF lucro_anual IS proximo_do_valor_esperado OR lucro_obtido IS razoavel THEN preco IS aceitavel;
+	RULE 3 : IF lucro_anual IS acima_do_valor_esperado OR lucro_obtido IS razoavel AND lucro_anual IS proximo_do_valor_esperado OR lucro_obtido IS baixo THEN preco IS barato;
+	RULE 4 : IF lucro_anual IS acima_do_valor_esperado OR lucro_obtido IS baixo THEN preco IS barato;
+	RULE 5 : IF lucro_anual IS acima_do_valor_esperado OR lucro_obtido IS alto THEN preco IS caro;
+	RULE 6 : IF lucro_anual IS abaixo_do_valor_esperado OR lucro_obtido IS alto THEN preco IS caro;
+	
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
+
